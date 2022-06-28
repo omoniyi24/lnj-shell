@@ -11,18 +11,15 @@ import org.springframework.shell.Availability;
 import org.springframework.shell.jline.PromptProvider;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
-import org.springframework.shell.standard.ShellMethodAvailability;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.PrintStream;
 import java.util.Collection;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.jar.Attributes;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -126,11 +123,13 @@ class ConnectionCommands {
 
 	private final PersonService personService;
 	private final ConsoleService  consoleService;
-	;
+	private final LDJService  ldjService;
 
-	ConnectionCommands (PersonService personService, ConsoleService consoleService){
+
+	ConnectionCommands(PersonService personService, ConsoleService consoleService, LDJService ldjService){
 		this.personService = personService;
 		this.consoleService = consoleService;
+		this.ldjService = ldjService;
 	}
 
 	@ShellMethod("connect to the person service")
