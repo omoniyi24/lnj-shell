@@ -33,3 +33,5 @@ build/
 .vscode/
 
 spring-shell.log
+data
+hs_err_**.log
