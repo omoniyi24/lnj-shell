@@ -1,0 +1,16 @@
+1656414747633:help
+1656414840635:connect --username j --password p
+1656421262654:help
+1656421282197:connect --username j --paswword 1
+1656421295481:connect --username j --paswword w
+1656421316471:connect --username j --paswword p
+1656421894941:help
+1656421900999:connect --username j --paswword p
+1656421919802:connect --username j --password
+1656421928461:connect --username j --password p
+1656421936756:disonnect
+1656421944166:disconnect
+1656422210768:help
+1656422218581:connect --username j --password p
+1656422220797:help
+1656425585474:connect --username hey --password mmm
