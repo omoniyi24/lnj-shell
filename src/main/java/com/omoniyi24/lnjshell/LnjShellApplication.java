@@ -22,13 +22,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.concurrent.*;
 
 @SpringBootApplication
 public class LnjShellApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(LnjShellApplication.class, args);
-    }
 
+    public static void main(String[] args) {
+        System.out.println(">>>>>> hello <<<<<<");
+        SpringApplication.run(LnjShellApplication.class, args);
+        System.out.println(">>>>>> goodbye <<<<<<");
+    }
 }
 
 @Data
@@ -136,6 +139,7 @@ class ConnectionCommands {
     private final PersonService personService;
     private final ConsoleService consoleService;
     private final LnjServiceUtil lnjServiceUtil;
+    public LDJService ldjService = new LDJService();
 
 
     ConnectionCommands(PersonService personService, ConsoleService consoleService, LDJService ldjService, LnjServiceUtil lnjServiceUtil) {
@@ -147,19 +151,15 @@ class ConnectionCommands {
     @ShellMethod("connect to lnj node")
     public void connect(String connectionString) throws Exception {
 
-        LDJService ldjService = new LDJService();
-        ldjService.start();
-        this.consoleService.write("Node Started");
 
-//        String[] connectionStringSplit = connectionString.split("@");
-//        String peerPublicKey = connectionStringSplit[0];
-//        String peerAdderess = connectionStringSplit[1];
-//        String[] peerAdderessSplit = peerAdderess.split(":");
-//        String peerHost = peerAdderessSplit[0];
-//        int peerPort = Integer.parseInt(peerAdderessSplit[1]);
-//        LDJService ldjService = new LDJService();
-//        personService.getLdjService().connect(peerPublicKey, peerHost, peerPort);
-//        this.consoleService.write("connected to %s", peerPublicKey);
+        String[] connectionStringSplit = connectionString.split("@");
+        String peerPublicKey = connectionStringSplit[0];
+        String peerAdderess = connectionStringSplit[1];
+        String[] peerAdderessSplit = peerAdderess.split(":");
+        String peerHost = peerAdderessSplit[0];
+        int peerPort = Integer.parseInt(peerAdderessSplit[1]);
+        ldjService.connect(peerPublicKey, peerHost, peerPort);
+        this.consoleService.write("connected to %s", peerPublicKey);
     }
 
     Availability connectAvailability() {
@@ -170,6 +170,26 @@ class ConnectionCommands {
     public void disconnect() {
         this.personService.disconnect();
         this.consoleService.write("disconnected %s");
+    }
+
+    @ShellMethod("start LDK")
+    public void start() {
+
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+        executorService.execute(new Runnable() {
+        public void run() {
+            //Start your mock service
+                try {
+                    System.out.println(">>>>>> starting ldjservice <<<<<<");
+                    ldjService.start();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println(">>>>>> exception <<<<<<");
+                }
+                executorService.shutdown();
+            }
+        });
     }
 
     Availability disconnectAvailability() {
