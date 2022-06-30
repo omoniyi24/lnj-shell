@@ -343,6 +343,7 @@ public class LDJService {
     }
 
     public void connect(String nodeId, String host, int port) {
+        System.out.println(String.format("%s, %s, %s", nodeId, host, port));
         try {
             getGlobalPeerHandler().connect(
                     Hex.decode(nodeId)

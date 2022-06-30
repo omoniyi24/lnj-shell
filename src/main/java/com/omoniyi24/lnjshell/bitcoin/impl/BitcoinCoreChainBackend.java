@@ -19,7 +19,7 @@ import java.util.Arrays;
 public class BitcoinCoreChainBackend implements ChainBackend {
 
     private final String URL = "http://127.0.0.1:18443";
-    private final String AUTH = "dXNlcjpwYXNz";
+    private final String AUTH = "dXNlcjpwYXNzd29yZA==";
 
     public static final MediaType JSON
             = MediaType.get("application/json; charset=utf-8");
@@ -52,6 +52,7 @@ public class BitcoinCoreChainBackend implements ChainBackend {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        System.out.print(response);
         final var json = new JSONObject(response);
         return json.getInt("result");
     }
