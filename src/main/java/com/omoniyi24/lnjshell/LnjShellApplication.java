@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -25,7 +25,8 @@ import java.util.stream.Stream;
 
 @SpringBootApplication
 public class LnjShellApplication {
-    public static void main(String[] args) {
+
+    public static void main(String[] args) throws Exception {
         SpringApplication.run(LnjShellApplication.class, args);
     }
 
@@ -136,6 +137,8 @@ class ConnectionCommands {
     private final PersonService personService;
     private final ConsoleService consoleService;
     private final LnjServiceUtil lnjServiceUtil;
+    public LDJService ldjService = new LDJService();
+
 
 
     ConnectionCommands(PersonService personService, ConsoleService consoleService, LDJService ldjService, LnjServiceUtil lnjServiceUtil) {
@@ -144,22 +147,38 @@ class ConnectionCommands {
         this.lnjServiceUtil = lnjServiceUtil;
     }
 
+    @ShellMethod("start LDK")
+    public void start() {
+
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+        executorService.execute(new Runnable() {
+            public void run() {
+                //Start your mock service
+                try {
+                    System.out.println(">>>>>> starting ldjservice <<<<<<");
+                    ldjService.start();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println(">>>>>> exception <<<<<<");
+                }
+                executorService.shutdown();
+            }
+        });
+    }
+
     @ShellMethod("connect to lnj node")
     public void connect(String connectionString) throws Exception {
 
-        LDJService ldjService = new LDJService();
-        ldjService.start();
-        this.consoleService.write("Node Started");
 
-//        String[] connectionStringSplit = connectionString.split("@");
-//        String peerPublicKey = connectionStringSplit[0];
-//        String peerAdderess = connectionStringSplit[1];
-//        String[] peerAdderessSplit = peerAdderess.split(":");
-//        String peerHost = peerAdderessSplit[0];
-//        int peerPort = Integer.parseInt(peerAdderessSplit[1]);
-//        LDJService ldjService = new LDJService();
-//        personService.getLdjService().connect(peerPublicKey, peerHost, peerPort);
-//        this.consoleService.write("connected to %s", peerPublicKey);
+        String[] connectionStringSplit = connectionString.split("@");
+        String peerPublicKey = connectionStringSplit[0];
+        String peerAdderess = connectionStringSplit[1];
+        String[] peerAdderessSplit = peerAdderess.split(":");
+        String peerHost = peerAdderessSplit[0];
+        int peerPort = Integer.parseInt(peerAdderessSplit[1]);
+        ldjService.connect(peerPublicKey, peerHost, peerPort);
+        this.consoleService.write("connected to %s", peerPublicKey);
     }
 
     Availability connectAvailability() {
