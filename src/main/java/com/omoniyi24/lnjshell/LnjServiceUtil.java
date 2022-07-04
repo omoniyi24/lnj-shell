@@ -1,6 +1,5 @@
 package com.omoniyi24.lnjshell;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -9,14 +8,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class LnjServiceUtil {
 
-    private LDJService ldjService;
+    private LNJService LNJService;
 
-    public void setLDJService(LDJService ldjService) {
-        this.ldjService = ldjService;
+    public void setLDJService(LNJService LNJService) {
+        this.LNJService = LNJService;
     }
 
-    public LDJService getLDJService(){
-        return ldjService;
+    public LNJService getLDJService(){
+        return LNJService;
     }
 
 

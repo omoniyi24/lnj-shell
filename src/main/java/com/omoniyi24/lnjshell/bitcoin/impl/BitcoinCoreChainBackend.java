@@ -105,7 +105,7 @@ public class BitcoinCoreChainBackend implements ChainBackend {
             final var response = client.newCall(request).execute()
                     .body()
                     .string();
-            System.out.println(response);
+//            System.out.println(response);
             final var json = new JSONObject(response).getJSONObject("result");
             final var buffer = ByteBuffer.wrap(new byte[80]);
             buffer.order(ByteOrder.LITTLE_ENDIAN);
