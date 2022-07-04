@@ -1,17 +1,13 @@
 package com.omoniyi24.lnjshell;
 
 import java.io.IOException;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class Main {
 
     public static void main(String[] args) throws IOException {
         try {
-            LDJService ldjService = new LDJService();
-            ldjService.start();
+            LNJService LNJService = new LNJService();
+            LNJService.start();
 
 //            String PEER_PUBKEY = "03ebb579eefc96a67517761c2c9d1ca692466d43e4f7ca7773db342f3aa8ff5716";
 //            String PEER_HOST = "127.0.0.1";

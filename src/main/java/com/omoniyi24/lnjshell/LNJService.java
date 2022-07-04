@@ -30,7 +30,7 @@ import static org.bitcoinj.core.NetworkParameters.ID_REGTEST;
  */
 
 @Service
-public class LDJService {
+public class LNJService {
 
     private final String SEED = "1E99423A4ED27608A15A2616A2B0E9E52CED330AC530EDCC32C8FFC6A526AEDD";
     private final String PEER_PUBKEY = "03ebb579eefc96a67517761c2c9d1ca692466d43e4f7ca7773db342f3aa8ff5716";
@@ -38,8 +38,9 @@ public class LDJService {
     private final int PEER_PORT = 10009;
     private final String refundAddress = "";
     private final BitcoinCoreChainBackend chainBackend = new BitcoinCoreChainBackend(NetworkParameters.fromID(ID_REGTEST));
-    org.slf4j.Logger slf4jLogger = LoggerFactory.getLogger(LDJService.class);
+    org.slf4j.Logger slf4jLogger = LoggerFactory.getLogger(LNJService.class);
     private NioPeerHandler globalPeerHandler;
+    private PeerManager peerManager;
 
     static byte[] reverse(final byte input[]) {
         final var output = new byte[input.length + 1];
@@ -193,6 +194,7 @@ public class LDJService {
             );
         }
         final ChannelManager channelManager = channelManagerConstructor.channel_manager;
+        setPeerManager(channelManagerConstructor.peer_manager);
 
         // Step 6
         final var channelManagerPersister = new ChannelManagerConstructor.EventHandler() {
@@ -271,13 +273,13 @@ public class LDJService {
         final int port = 9731;
         peerHandler.bind_listener(new InetSocketAddress("127.0.0.1", port));
 //        System.out.printf("Node started on port %d. PubKey is %s%n", port, Hex.toHexString(channelManager.get_our_node_id()));
-        System.out.printf("LNQ node %s 127.0.0.1:%d%n"
-                , Hex.toHexString(channelManager.get_our_node_id())
-                , port
-        );
+//        System.out.printf("LNQ node %s 127.0.0.1:%d%n"
+//                , Hex.toHexString(channelManager.get_our_node_id())
+//                , port
+//        );
         final var peerPubKey = Hex.decode("0353f166d164322e9bed4e87ccbc8056adfdf1a6f4fbb23c441a988fe63a24c101");
 
-        System.out.printf("Currently having %d channels, %d of them are ready to use.%n", channelManager.list_channels().length, channelManager.list_usable_channels().length);
+//        System.out.printf("Currently having %d channels, %d of them are ready to use.%n", channelManager.list_channels().length, channelManager.list_usable_channels().length);
 
 //        peerHandler.connect(
 //                peerPubKey,
@@ -339,7 +341,7 @@ public class LDJService {
         );
         assert result instanceof Result_InvoiceSignOrCreationErrorZ.Result_InvoiceSignOrCreationErrorZ_OK;
         Invoice invoice = ((Result_InvoiceSignOrCreationErrorZ.Result_InvoiceSignOrCreationErrorZ_OK) result).res;
-        System.out.printf("Invoice: %s%n", invoice.to_str());
+//        System.out.printf("Invoice: %s%n", invoice.to_str());
     }
 
     public void connect(String nodeId, String host, int port) {
@@ -355,6 +357,10 @@ public class LDJService {
         }
     }
 
+    public byte[][] listPeers() {
+            return getPeerManager().get_peer_node_ids();
+    }
+
     public NioPeerHandler getGlobalPeerHandler() {
         return globalPeerHandler;
     }
@@ -365,6 +371,19 @@ public class LDJService {
         } else {
             this.globalPeerHandler = globalPeerHandler;
             slf4jLogger.info("NioPeerHandler set successfully... {}", globalPeerHandler);
+        }
+    }
+
+    public PeerManager getPeerManager() {
+        return this.peerManager;
+    }
+
+    public void setPeerManager(PeerManager peerManager) {
+        if (peerManager == null) {
+            slf4jLogger.info("PeerManager is null");
+        } else {
+            this.peerManager = peerManager;
+            slf4jLogger.info("PeerManager set successfully... {}", peerManager);
         }
     }
 

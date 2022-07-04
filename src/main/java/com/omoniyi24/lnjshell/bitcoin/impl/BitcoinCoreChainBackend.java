@@ -52,7 +52,6 @@ public class BitcoinCoreChainBackend implements ChainBackend {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        System.out.println(">>>>>" + response);
         final var json = new JSONObject(response);
         return json.getInt("result");
     }
@@ -105,7 +104,7 @@ public class BitcoinCoreChainBackend implements ChainBackend {
             final var response = client.newCall(request).execute()
                     .body()
                     .string();
-            System.out.println(response);
+//            System.out.println(response);
             final var json = new JSONObject(response).getJSONObject("result");
             final var buffer = ByteBuffer.wrap(new byte[80]);
             buffer.order(ByteOrder.LITTLE_ENDIAN);

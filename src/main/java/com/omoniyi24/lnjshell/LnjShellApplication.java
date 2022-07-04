@@ -15,9 +15,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -26,10 +29,11 @@ import java.util.stream.Stream;
 @SpringBootApplication
 public class LnjShellApplication {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
+        System.out.println(">>>>>> hello <<<<<<");
         SpringApplication.run(LnjShellApplication.class, args);
+        System.out.println(">>>>>> goodbye <<<<<<");
     }
-
 }
 
 @Data
@@ -61,11 +65,11 @@ class ConsoleService {
 
 
 @Service
-class PersonService implements InitializingBean {
+class LNJShellService implements InitializingBean {
 
     private final Map<Long, Person> people = new ConcurrentHashMap<>();
     private final AtomicBoolean connected = new AtomicBoolean();
-    private LDJService ldjService;
+    private LNJService LNJService;
 
     boolean isConnected() {
         return this.connected.get();
@@ -101,15 +105,15 @@ class PersonService implements InitializingBean {
 
 //        ldjService = new LDJService();
 //        ldjService.start();
-        setLdjService(ldjService);
+        setLdjService(LNJService);
     }
 
-    public LDJService getLdjService() {
-        return ldjService;
+    public LNJService getLdjService() {
+        return LNJService;
     }
 
-    public void setLdjService(LDJService ldjService) {
-        this.ldjService = ldjService;
+    public void setLdjService(LNJService LNJService) {
+        this.LNJService = LNJService;
     }
 }
 
@@ -117,15 +121,15 @@ class PersonService implements InitializingBean {
 @Component
 class ConnectedPromptProvider implements PromptProvider {
 
-    private final PersonService personService;
+    private final LNJShellService LNJShellService;
 
-    ConnectedPromptProvider(PersonService personService) {
-        this.personService = personService;
+    ConnectedPromptProvider(LNJShellService LNJShellService) {
+        this.LNJShellService = LNJShellService;
     }
 
     @Override()
     public AttributedString getPrompt() {
-        String msg = String.format("lnj-shell %s)> ", this.personService.isConnected() ? "connected" : "disconnect");
+        String msg = String.format("lnj-shell (%s) > ", this.LNJShellService.isConnected() ? "connected" : "disconnect");
         return new AttributedString(msg);
     }
 }
@@ -134,37 +138,16 @@ class ConnectedPromptProvider implements PromptProvider {
 @ShellComponent
 class ConnectionCommands {
 
-    private final PersonService personService;
+    private final LNJShellService LNJShellService;
     private final ConsoleService consoleService;
     private final LnjServiceUtil lnjServiceUtil;
-    public LDJService ldjService = new LDJService();
+    public LNJService LNJService = new LNJService();
 
 
-
-    ConnectionCommands(PersonService personService, ConsoleService consoleService, LDJService ldjService, LnjServiceUtil lnjServiceUtil) {
-        this.personService = personService;
+    ConnectionCommands(LNJShellService LNJShellService, ConsoleService consoleService, LNJService LNJService, LnjServiceUtil lnjServiceUtil) {
+        this.LNJShellService = LNJShellService;
         this.consoleService = consoleService;
         this.lnjServiceUtil = lnjServiceUtil;
-    }
-
-    @ShellMethod("start LDK")
-    public void start() {
-
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
-
-        executorService.execute(new Runnable() {
-            public void run() {
-                //Start your mock service
-                try {
-                    System.out.println(">>>>>> starting ldjservice <<<<<<");
-                    ldjService.start();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    System.out.println(">>>>>> exception <<<<<<");
-                }
-                executorService.shutdown();
-            }
-        });
     }
 
     @ShellMethod("connect to lnj node")
@@ -177,21 +160,86 @@ class ConnectionCommands {
         String[] peerAdderessSplit = peerAdderess.split(":");
         String peerHost = peerAdderessSplit[0];
         int peerPort = Integer.parseInt(peerAdderessSplit[1]);
-        ldjService.connect(peerPublicKey, peerHost, peerPort);
+        LNJService.connect(peerPublicKey, peerHost, peerPort);
+        this.LNJShellService.isConnected();
         this.consoleService.write("connected to %s", peerPublicKey);
     }
 
+    @ShellMethod("connect to lnj node")
+    public void listpeers() throws Exception {
+        try {
+            byte[][] peer_node_ids = LNJService.listPeers();
+
+            for (int r = 0; r < peer_node_ids.length; r++) {       //for loop for row iteration.
+                for (int c = 0; c < peer_node_ids[r].length; c++) {   //for loop for column iteration.
+//                    System.out.print(peer_node_ids[r][c] + " ");
+                    String str = new String(peer_node_ids[r], StandardCharsets.UTF_8);
+
+//                    StringBuilder str = new StringBuilder();
+//                    byte aByte = peer_node_ids[r][c];
+//                    if (aByte != 0) {
+//                        str.append((char) aByte);
+//                    } else {
+//                        break;
+//                    }
+                    System.out.print(str);
+                }
+                System.out.println(); //using this for new line to print array in matrix format.
+            }
+
+//            System.out.println("Peers:" + Arrays.deepToString(peer_node_ids));
+//            final var list = new ArrayList<>(List.of(peer_node_ids));
+//            System.out.println(list);
+//            list.stream()
+//                    .forEach(peer -> {
+//                            StringBuilder str = new StringBuilder();
+//                            for (byte aByte : peer) {
+//                                if (aByte != 0) {
+//                                    str.append((char) aByte);
+//                                } else {
+//                                    break;
+//                                }
+//                            }
+//                            System.out.println("Peers: "+ peer.);
+////                        this.consoleService.write("Peers: %s", new String(peer));
+//                    });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     Availability connectAvailability() {
-        return !this.personService.isConnected() ? Availability.available() : Availability.unavailable("you're already connected");
+        return !this.LNJShellService.isConnected() ? Availability.available() : Availability.unavailable("you're already connected");
     }
 
     @ShellMethod("disconnect to the person service")
     public void disconnect() {
-        this.personService.disconnect();
+        this.LNJShellService.disconnect();
         this.consoleService.write("disconnected %s");
     }
 
+    @ShellMethod("start LDK")
+    public void start() {
+
+        ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+        executorService.execute(new Runnable() {
+            public void run() {
+                try {
+                    System.out.println("Starting LNJ Node Service 🇳🇬🇳🇬🇳🇬🇳🇬🇳🇬🇳🇬🇳🇬🇳🇬🇳🇬🇳🇬🇳🇬🇳🇬🇳🇬🇳🇬");
+                    System.out.println(String.format("LND NODE :[ %s, %s]",
+                            "02fb85064a8f6c75655cdd8189b7c072dea0bcc90874abc1b130d9d951eb9c17ca", "127.0.0.1:9731"));
+                    LNJService.start();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println(">>>>>> exception <<<<<<");
+                }
+                executorService.shutdown();
+            }
+        });
+    }
+
     Availability disconnectAvailability() {
-        return this.personService.isConnected() ? Availability.available() : Availability.unavailable("you're not connected");
+        return this.LNJShellService.isConnected() ? Availability.available() : Availability.unavailable("you're not connected");
     }
 }
