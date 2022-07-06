@@ -181,6 +181,16 @@ class ConnectionCommands {
         }
     }
 
+    @ShellMethod("connect to lnj node")
+    public void createinvoice(Long amountInMSat, String description) throws Exception {
+        try {
+            String invoice = LNJService.generateInvoice(amountInMSat, description);
+            this.consoleService.write(invoice);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     Availability connectAvailability() {
         return !this.LNJShellService.isConnected() ? Availability.available() : Availability.unavailable("you're already connected");
     }

@@ -41,6 +41,8 @@ public class LNJService {
     org.slf4j.Logger slf4jLogger = LoggerFactory.getLogger(LNJService.class);
     private NioPeerHandler globalPeerHandler;
     private PeerManager peerManager;
+    private ChannelManager channelManager;
+    private KeysManager keyManager;
 
     static byte[] reverse(final byte input[]) {
         final var output = new byte[input.length + 1];
@@ -133,7 +135,7 @@ public class LNJService {
         // Step 9
         final var seed = Hex.decode(SEED);
         final var startupTime = System.currentTimeMillis();
-        final var keyManager = KeysManager.of(
+        keyManager = KeysManager.of(
                 seed,
                 startupTime / 1000,
                 (int) (startupTime * 1000)
@@ -193,7 +195,7 @@ public class LNJService {
                     logger
             );
         }
-        final ChannelManager channelManager = channelManagerConstructor.channel_manager;
+        channelManager = channelManagerConstructor.channel_manager;
         setPeerManager(channelManagerConstructor.peer_manager);
 
         // Step 6
@@ -360,6 +362,19 @@ public class LNJService {
 
     public byte[][] listPeers() {
             return getPeerManager().get_peer_node_ids();
+    }
+
+    public String generateInvoice(Long amountMsat, String description) {
+        Result_InvoiceSignOrCreationErrorZ result = UtilMethods.create_invoice_from_channelmanager(
+                channelManager,
+                keyManager.as_KeysInterface(),
+                org.ldk.enums.Currency.LDKCurrency_Regtest,
+                Option_u64Z.some(amountMsat),
+                description
+        );
+        assert result instanceof Result_InvoiceSignOrCreationErrorZ.Result_InvoiceSignOrCreationErrorZ_OK;
+        Invoice invoice = ((Result_InvoiceSignOrCreationErrorZ.Result_InvoiceSignOrCreationErrorZ_OK) result).res;
+        return invoice.to_str();
     }
 
     public NioPeerHandler getGlobalPeerHandler() {
