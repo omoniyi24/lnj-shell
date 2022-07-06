@@ -3,6 +3,7 @@ package com.omoniyi24.lnjshell;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.apache.commons.codec.binary.Hex;
 import org.jline.utils.AttributedString;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.SpringApplication;
@@ -16,8 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -169,40 +169,13 @@ class ConnectionCommands {
     public void listpeers() throws Exception {
         try {
             byte[][] peer_node_ids = LNJService.listPeers();
-
-            for (int r = 0; r < peer_node_ids.length; r++) {       //for loop for row iteration.
-                for (int c = 0; c < peer_node_ids[r].length; c++) {   //for loop for column iteration.
-//                    System.out.print(peer_node_ids[r][c] + " ");
-                    String str = new String(peer_node_ids[r], StandardCharsets.UTF_8);
-
-//                    StringBuilder str = new StringBuilder();
-//                    byte aByte = peer_node_ids[r][c];
-//                    if (aByte != 0) {
-//                        str.append((char) aByte);
-//                    } else {
-//                        break;
-//                    }
-                    System.out.print(str);
-                }
-                System.out.println(); //using this for new line to print array in matrix format.
+            final var byteArray = new ArrayList<>(List.of(peer_node_ids));
+            StringBuffer hexStringBuffer = new StringBuffer();
+            for (int i = 0; i < byteArray.size(); i++) {
+                hexStringBuffer.append(Hex.encodeHex(byteArray.get(i)));
             }
-
-//            System.out.println("Peers:" + Arrays.deepToString(peer_node_ids));
-//            final var list = new ArrayList<>(List.of(peer_node_ids));
-//            System.out.println(list);
-//            list.stream()
-//                    .forEach(peer -> {
-//                            StringBuilder str = new StringBuilder();
-//                            for (byte aByte : peer) {
-//                                if (aByte != 0) {
-//                                    str.append((char) aByte);
-//                                } else {
-//                                    break;
-//                                }
-//                            }
-//                            System.out.println("Peers: "+ peer.);
-////                        this.consoleService.write("Peers: %s", new String(peer));
-//                    });
+            this.consoleService.write(String.valueOf(hexStringBuffer));
+//            System.out.print(hexStringBuffer);
         } catch (Exception e) {
             e.printStackTrace();
         }
