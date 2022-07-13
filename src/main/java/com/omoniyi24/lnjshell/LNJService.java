@@ -41,6 +41,7 @@ public class LNJService {
     org.slf4j.Logger slf4jLogger = LoggerFactory.getLogger(LNJService.class);
     private NioPeerHandler globalPeerHandler;
     private PeerManager peerManager;
+    private ChannelManagerConstructor channelManagerConstructor;
     private ChannelManager channelManager;
     private KeysManager keyManager;
 
@@ -197,6 +198,7 @@ public class LNJService {
         }
         channelManager = channelManagerConstructor.channel_manager;
         setPeerManager(channelManagerConstructor.peer_manager);
+        setChannelConstructor(channelManagerConstructor);
 
         // Step 6
         final var channelManagerPersister = new ChannelManagerConstructor.EventHandler() {
@@ -377,6 +379,25 @@ public class LNJService {
         return invoice.to_str();
     }
 
+    public Map<String, Object> listChannels() {
+        ChannelDetails[] channelDetails = getChannelConstructor().channel_manager.list_channels();
+        Map<String, Object> result = new HashMap<>();
+        result.put("channels", channelDetails);
+        return result;
+    }
+
+    public String openChannel(String nodeId, long local_amt) {
+        String  response = "";
+        byte[] decodeNodeId = Hex.decode(nodeId);
+        Result__u832APIErrorZ channel = getChannelConstructor().channel_manager.create_channel(decodeNodeId, local_amt, 0, 0, UserConfig.with_default());
+        if(channel.is_ok()){
+            response = "Channel create successfully";
+        } else {
+            response = "Unable to create channel";
+        }
+        return response;
+    }
+
     public NioPeerHandler getGlobalPeerHandler() {
         return globalPeerHandler;
     }
@@ -400,6 +421,19 @@ public class LNJService {
         } else {
             this.peerManager = peerManager;
             slf4jLogger.info("PeerManager set successfully... {}", peerManager);
+        }
+    }
+
+    public ChannelManagerConstructor getChannelConstructor() {
+        return this.channelManagerConstructor;
+    }
+
+    public void setChannelConstructor(ChannelManagerConstructor channelManagerConstructor) {
+        if (channelManagerConstructor == null) {
+            slf4jLogger.info("ChannelManagerConstructor is null");
+        } else {
+            this.channelManagerConstructor = channelManagerConstructor;
+            slf4jLogger.info("ChannelManagerConstructor set successfully... {}", channelManagerConstructor);
         }
     }
 
