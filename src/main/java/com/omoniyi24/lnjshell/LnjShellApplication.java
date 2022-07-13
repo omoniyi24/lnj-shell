@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.codec.binary.Hex;
 import org.jline.utils.AttributedString;
+import org.json.JSONObject;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -174,18 +175,42 @@ class ConnectionCommands {
             for (int i = 0; i < byteArray.size(); i++) {
                 hexStringBuffer.append(Hex.encodeHex(byteArray.get(i)));
             }
-            this.consoleService.write(String.valueOf(hexStringBuffer));
+            Map<String, Object> result = new HashMap<>();
+            result.put("pub_key", hexStringBuffer);
+            final var json = new JSONObject(result);
+            this.consoleService.write(String.valueOf(json));
 //            System.out.print(hexStringBuffer);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    @ShellMethod("connect to lnj node")
-    public void createinvoice(Long amountInMSat, String description) throws Exception {
+    @ShellMethod("add an invoice")
+    public void addinvoice(Long amountInMSat, String description) throws Exception {
         try {
             String invoice = LNJService.generateInvoice(amountInMSat, description);
             this.consoleService.write(invoice);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @ShellMethod("list channels")
+    public void listchannels() throws Exception {
+        try {
+            Map<String, Object> objectMap = LNJService.listChannels();
+            final var json = new JSONObject(objectMap);
+            this.consoleService.write(String.valueOf(json));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @ShellMethod("open channels")
+    public void openchannels(String nodeId, long localAmt) throws Exception {
+        try {
+            String openChannelResponse = LNJService.openChannel(nodeId, localAmt);
+            this.consoleService.write(openChannelResponse);
         } catch (Exception e) {
             e.printStackTrace();
         }
