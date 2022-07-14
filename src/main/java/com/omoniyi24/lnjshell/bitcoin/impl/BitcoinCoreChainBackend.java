@@ -18,8 +18,11 @@ import java.util.Arrays;
 
 public class BitcoinCoreChainBackend implements ChainBackend {
 
-    private final String URL = "http://127.0.0.1:18443";
-    private final String AUTH = "dXNlcjpwYXNz";
+//    private final String URL = "http://127.0.0.1:18443";
+//    private final String AUTH = "dXNlcjpwYXNz";
+
+    private final String URL = "http://127.0.0.1:18446";
+    private final String AUTH = "cG9sYXJ1c2VyOnBvbGFycGFzcw==";
 
     public static final MediaType JSON
             = MediaType.get("application/json; charset=utf-8");

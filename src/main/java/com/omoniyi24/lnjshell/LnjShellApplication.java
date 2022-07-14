@@ -206,8 +206,8 @@ class ConnectionCommands {
         }
     }
 
-    @ShellMethod("open channels")
-    public void openchannels(String nodeId, long localAmt) throws Exception {
+    @ShellMethod("open channel")
+    public void openchannel(String nodeId, long localAmt) throws Exception {
         try {
             String openChannelResponse = LNJService.openChannel(nodeId, localAmt);
             this.consoleService.write(openChannelResponse);
